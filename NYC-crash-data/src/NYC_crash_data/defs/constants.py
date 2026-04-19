@@ -1,0 +1,36 @@
+from pathlib import Path
+
+# SODA2 API endpoints, with a limit of 50k records per request
+CRASH_API_URL = "https://data.cityofnewyork.us/resource/h9gi-nx95.csv"
+VEHICLE_API_URL = "https://data.cityofnewyork.us/resource/bm4k-52h4.csv"
+PERSON_API_URL = "https://data.cityofnewyork.us/resource/f55k-p6yu.csv"
+
+DATA_DIR = Path(__file__).parent.resolve() / "data"
+CRASH_CSV_PATH = DATA_DIR / "crash_data.csv"
+VEHICLE_CSV_PATH = DATA_DIR / "vehicle_data.csv"
+PERSON_CSV_PATH = DATA_DIR / "person_data.csv"
+HOURLY_WEATHER_CSV_PATH = DATA_DIR / "hourly_weather_data.csv"
+DAILY_WEATHER_CSV_PATH = DATA_DIR / "daily_weather_data.csv"
+
+# Obtained from and for use with Open-Meteo API (https://open-meteo.com/)
+BOROUGH_COORDINATES = {
+    "manhattan": (40.7834, -73.9663),
+    "brooklyn": (40.6501, -73.9496),
+    "queens": (40.6815, -73.8365),
+    "the bronx": (40.8499, -73.8664),
+    "staten island": (40.5623, -74.1399),
+}
+# Always keep the order of variables in hourly or daily as below
+HOURLY_WEATHER_VARS = []
+DAILY_WEATHER_VARS = [
+    "sunrise",
+    "sunset",
+    "temperature_2m_max",
+    "temperature_2m_min",
+    "rain_sum",
+    "snowfall_sum",
+    "precipitation_hours",
+]
+TIMEZONE = "America/New_York"
+TEMPERATURE_UNIT = "fahrenheit"
+PRECIPITATION_UNIT = "inch"
