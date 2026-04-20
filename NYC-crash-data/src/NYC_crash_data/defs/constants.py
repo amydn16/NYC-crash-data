@@ -20,7 +20,7 @@ BOROUGH_COORDINATES = {
     "the bronx": (40.8499, -73.8664),
     "staten island": (40.5623, -74.1399),
 }
-# Always keep the order of variables in hourly or daily as below
+# Always keep the order of variables in hourly or daily as below. Use empty list to specify that no variables of a certain frequency are to be fetched.
 HOURLY_WEATHER_VARS = []
 DAILY_WEATHER_VARS = [
     "sunrise",
@@ -34,3 +34,6 @@ DAILY_WEATHER_VARS = [
 TIMEZONE = "America/New_York"
 TEMPERATURE_UNIT = "fahrenheit"
 PRECIPITATION_UNIT = "inch"
+# Either specify start and end dates (formatted as "%Y-%m-%d") here, or set them to None to use the oldest and newest dates in the crash dataset
+START_DATE = "2012-07-01"
+END_DATE = "2026-04-15"

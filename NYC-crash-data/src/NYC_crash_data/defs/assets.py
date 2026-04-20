@@ -10,6 +10,8 @@ from src.NYC_crash_data.defs.constants import (
     PERSON_CSV_PATH,
     HOURLY_WEATHER_CSV_PATH,
     DAILY_WEATHER_CSV_PATH,
+    HOURLY_WEATHER_VARS,
+    DAILY_WEATHER_VARS,
 )
 from src.NYC_crash_data.defs.download_utils import (
     create_traffic_asset,
@@ -38,15 +40,18 @@ def weather() -> list[str]:
     params = get_params_for_fetching_weather_data(CRASH_CSV_PATH)
 
     if HOURLY_WEATHER_VARS and DAILY_WEATHER_VARS:
-        file_path = {"hourly": HOURLY_WEATHER_CSV_PATH, "daily": DAILY_WEATHER_CSV_PATH}
+        file_path_dict = {
+            "hourly_data": HOURLY_WEATHER_CSV_PATH,
+            "daily_data": DAILY_WEATHER_CSV_PATH,
+        }
     elif HOURLY_WEATHER_VARS:
-        file_path = HOURLY_WEATHER_CSV_PATH
+        file_path_dict = {"hourly_data": HOURLY_WEATHER_CSV_PATH}
     elif DAILY_WEATHER_VARS:
-        file_path = DAILY_WEATHER_CSV_PATH
+        file_path_dict = {"daily_data": DAILY_WEATHER_CSV_PATH}
     else:
-        file_path = None
+        file_path_dict = {}
 
-    if file_path is None:
-        return ""
+    if not file_path_dict:
+        return []
 
-    return create_weather_asset(params, file_path)
+    return create_weather_asset(params, file_path_dict)

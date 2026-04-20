@@ -17,6 +17,7 @@ dev = [
     "dagster-webserver",
     "dagster-dg-cli",
     "ruff>=0.15.10",
+    "pyright>=1.1.408",
 ]
 
 [build-system]
