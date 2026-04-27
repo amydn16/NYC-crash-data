@@ -1,4 +1,7 @@
+import os
+from dotenv import load_dotenv
 from pathlib import Path
+
 
 # SODA2 API endpoints, with a limit of 50k records per request
 CRASH_API_URL = "https://data.cityofnewyork.us/resource/h9gi-nx95.csv"
@@ -20,20 +23,20 @@ BOROUGH_COORDINATES = {
     "the bronx": (40.8499, -73.8664),
     "staten island": (40.5623, -74.1399),
 }
-# Always keep the order of variables in hourly or daily as below. Use empty list to specify that no variables of a certain frequency are to be fetched.
-HOURLY_WEATHER_VARS = []
-DAILY_WEATHER_VARS = [
-    "sunrise",
-    "sunset",
-    "temperature_2m_max",
-    "temperature_2m_min",
-    "rain_sum",
-    "snowfall_sum",
-    "precipitation_hours",
-]
-TIMEZONE = "America/New_York"
-TEMPERATURE_UNIT = "fahrenheit"
-PRECIPITATION_UNIT = "inch"
-# Either specify start and end dates (formatted as "%Y-%m-%d") here, or set them to None to use the oldest and newest dates in the crash dataset
-START_DATE = "2012-07-01"
-END_DATE = "2026-04-15"
+
+# Load weather variables set in .env
+load_dotenv()
+
+RAW_HOURLY_WEATHER_VARS = os.getenv("HOURLY_WEATHER_VARS")
+HOURLY_WEATHER_VARS = (
+    RAW_HOURLY_WEATHER_VARS.split(",") if RAW_HOURLY_WEATHER_VARS else []
+)
+
+RAW_DAILY_WEATHER_VARS = os.getenv("DAILY_WEATHER_VARS")
+DAILY_WEATHER_VARS = RAW_DAILY_WEATHER_VARS.split(",") if RAW_DAILY_WEATHER_VARS else []
+
+TIMEZONE = os.getenv("TIMEZONE")
+TEMPERATURE_UNIT = os.getenv("TEMPERATURE_UNIT")
+PRECIPITATION_UNIT = os.getenv("PRECIPITATION_UNIT")
+START_DATE = os.getenv("START_DATE")
+END_DATE = os.getenv("END_DATE")

@@ -116,9 +116,9 @@ def download_weather_data(
             daily_data = {
                 "date": pd.date_range(
                     start=pd.to_datetime(
-                        daily.Time() + response.UtcOffsetSeconds(),
+                        daily.Time() + response.UtcOffsetSeconds(),  # pyright: ignore
                         unit="s",
-                        utc=True,  # pyright: ignore
+                        utc=True,
                     ),
                     end=pd.to_datetime(
                         daily.TimeEnd() + response.UtcOffsetSeconds(),  # pyright: ignore
@@ -204,11 +204,13 @@ def get_params_for_fetching_weather_data(
 
         params["latitude"] = []
         params["longitude"] = []
+        params["timezone"] = []
         for borough in boroughs:
             if borough in BOROUGH_COORDINATES:
                 lat, lon = BOROUGH_COORDINATES[borough]
                 params["latitude"].append(lat)
                 params["longitude"].append(lon)
+                params["timezone"].append(TIMEZONE)
 
         if HOURLY_WEATHER_VARS:
             params["hourly"] = HOURLY_WEATHER_VARS
@@ -216,7 +218,6 @@ def get_params_for_fetching_weather_data(
         if DAILY_WEATHER_VARS:
             params["daily"] = DAILY_WEATHER_VARS
 
-        params["timezone"] = TIMEZONE * len(boroughs)
         params["temperature_unit"] = TEMPERATURE_UNIT
         params["precipitation_unit"] = PRECIPITATION_UNIT
 
