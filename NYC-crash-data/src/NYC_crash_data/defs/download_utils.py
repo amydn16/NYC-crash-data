@@ -1,11 +1,9 @@
-import openmeteo_requests
 import pandas as pd
-import requests_cache
 from pathlib import Path
 from openmeteo_requests import Client
 from requests_cache import CachedSession
 from retry_requests import retry
-from src.NYC_crash_data.defs.constants import (
+from NYC_crash_data.defs.constants import (
     BOROUGH_COORDINATES,
     HOURLY_WEATHER_VARS,
     DAILY_WEATHER_VARS,
@@ -16,6 +14,9 @@ from src.NYC_crash_data.defs.constants import (
     END_DATE,
 )
 
+# ------------------------------------------
+# Crash data fetching functions & helpers
+# ------------------------------------------
 QUERY_LIMIT = 50000
 INITIAL_OFFSET = 0
 
@@ -60,88 +61,9 @@ def create_traffic_asset(url: str, file_path: Path) -> str:
         return ""
 
 
-def download_weather_data(
-    params: dict[str, str | list[str | float]],
-) -> dict[str, pd.DataFrame]:
-    # Setup the Open-Meteo API client with cache and retry on error
-    cache_session = CachedSession(".cache", expire_after=-1)
-    retry_session = retry(cache_session, retries=5, backoff_factor=0.2)
-    openmeteo = Client(session=retry_session)  # pyright: ignore
-
-    url = "https://archive-api.open-meteo.com/v1/archive"
-    responses = openmeteo.weather_api(url, params=params)
-
-    results = {}
-
-    try:
-        # Process all locations listed in params
-        for response in responses:
-            if "hourly" in params:
-                # Process hourly data. The order of variables needs to be the same as requested.
-                hourly = response.Hourly()
-                hourly_temperature_2m = hourly.Variables(0).ValuesAsNumpy()  # pyright: ignore
-                hourly_rain = hourly.Variables(1).ValuesAsNumpy()  # pyright: ignore
-                hourly_snowfall = hourly.Variables(2).ValuesAsNumpy()  # pyright: ignore
-                hourly_wind_speed_10m = hourly.Variables(3).ValuesAsNumpy()  # pyright: ignore
-
-                hourly_data = {
-                    "date": pd.date_range(
-                        start=pd.to_datetime(
-                            hourly.Time() + response.UtcOffsetSeconds(),  # pyright: ignore
-                            unit="s",
-                            utc=True,
-                        ),
-                        end=pd.to_datetime(
-                            hourly.TimeEnd() + response.UtcOffsetSeconds(),  # pyright: ignore
-                            unit="s",
-                            utc=True,
-                        ),
-                        freq=pd.Timedelta(seconds=hourly.Interval()),  # pyright: ignore
-                        inclusive="left",
-                    )
-                }
-
-                hourly_data["temperature_2m"] = hourly_temperature_2m  # pyright: ignore
-                hourly_data["rain"] = hourly_rain  # pyright: ignore
-                hourly_data["snowfall"] = hourly_snowfall  # pyright: ignore
-                hourly_data["wind_speed_10m"] = hourly_wind_speed_10m  # pyright: ignore
-
-                results["hourly_data"] = pd.DataFrame(data=hourly_data)
-
-            # Process daily data. The order of variables needs to be the same as requested.
-            daily = response.Daily()
-            daily_sunrise = daily.Variables(0).ValuesInt64AsNumpy()  # pyright: ignore
-            daily_sunset = daily.Variables(1).ValuesInt64AsNumpy()  # pyright: ignore
-
-            daily_data = {
-                "date": pd.date_range(
-                    start=pd.to_datetime(
-                        daily.Time() + response.UtcOffsetSeconds(),  # pyright: ignore
-                        unit="s",
-                        utc=True,
-                    ),
-                    end=pd.to_datetime(
-                        daily.TimeEnd() + response.UtcOffsetSeconds(),  # pyright: ignore
-                        unit="s",
-                        utc=True,
-                    ),
-                    freq=pd.Timedelta(seconds=daily.Interval()),  # pyright: ignore
-                    inclusive="left",
-                )
-            }
-
-            daily_data["sunrise"] = daily_sunrise  # pyright: ignore
-            daily_data["sunset"] = daily_sunset  # pyright: ignore
-
-            results["daily_data"] = pd.DataFrame(data=daily_data)
-
-        return results
-
-    except Exception as e:
-        print(f"Error fetching weather data: {e}")
-        return results
-
-
+# ------------------------------------------
+# Weather data fetching functions & helpers
+# ------------------------------------------
 def get_min_max_dates_from_csv(
     file_path: Path,
 ) -> tuple[pd.Timestamp, pd.Timestamp] | None:
@@ -225,6 +147,88 @@ def get_params_for_fetching_weather_data(
     except Exception as e:
         print(f"Error getting params for fetching weather data: {e}")
         return params
+
+
+def download_weather_data(
+    params: dict[str, str | list[str | float]],
+) -> dict[str, pd.DataFrame]:
+    # Setup the Open-Meteo API client with cache and retry on error
+    cache_session = CachedSession(".cache", expire_after=-1)
+    retry_session = retry(cache_session, retries=5, backoff_factor=0.2)
+    openmeteo = Client(session=retry_session)  # pyright: ignore
+
+    url = "https://archive-api.open-meteo.com/v1/archive"
+    responses = openmeteo.weather_api(url, params=params)
+
+    results = {}
+
+    try:
+        # Process all locations listed in params
+        for response in responses:
+            if "hourly" in params:
+                # Process hourly data. The order of variables needs to be the same as requested.
+                hourly = response.Hourly()
+                hourly_temperature_2m = hourly.Variables(0).ValuesAsNumpy()  # pyright: ignore
+                hourly_rain = hourly.Variables(1).ValuesAsNumpy()  # pyright: ignore
+                hourly_snowfall = hourly.Variables(2).ValuesAsNumpy()  # pyright: ignore
+                hourly_wind_speed_10m = hourly.Variables(3).ValuesAsNumpy()  # pyright: ignore
+
+                hourly_data = {
+                    "date": pd.date_range(
+                        start=pd.to_datetime(
+                            hourly.Time() + response.UtcOffsetSeconds(),  # pyright: ignore
+                            unit="s",
+                            utc=True,
+                        ),
+                        end=pd.to_datetime(
+                            hourly.TimeEnd() + response.UtcOffsetSeconds(),  # pyright: ignore
+                            unit="s",
+                            utc=True,
+                        ),
+                        freq=pd.Timedelta(seconds=hourly.Interval()),  # pyright: ignore
+                        inclusive="left",
+                    )
+                }
+
+                hourly_data["temperature_2m"] = hourly_temperature_2m  # pyright: ignore
+                hourly_data["rain"] = hourly_rain  # pyright: ignore
+                hourly_data["snowfall"] = hourly_snowfall  # pyright: ignore
+                hourly_data["wind_speed_10m"] = hourly_wind_speed_10m  # pyright: ignore
+
+                results["hourly_data"] = pd.DataFrame(data=hourly_data)
+
+            # Process daily data. The order of variables needs to be the same as requested.
+            daily = response.Daily()
+            daily_sunrise = daily.Variables(0).ValuesInt64AsNumpy()  # pyright: ignore
+            daily_sunset = daily.Variables(1).ValuesInt64AsNumpy()  # pyright: ignore
+
+            daily_data = {
+                "date": pd.date_range(
+                    start=pd.to_datetime(
+                        daily.Time() + response.UtcOffsetSeconds(),  # pyright: ignore
+                        unit="s",
+                        utc=True,
+                    ),
+                    end=pd.to_datetime(
+                        daily.TimeEnd() + response.UtcOffsetSeconds(),  # pyright: ignore
+                        unit="s",
+                        utc=True,
+                    ),
+                    freq=pd.Timedelta(seconds=daily.Interval()),  # pyright: ignore
+                    inclusive="left",
+                )
+            }
+
+            daily_data["sunrise"] = daily_sunrise  # pyright: ignore
+            daily_data["sunset"] = daily_sunset  # pyright: ignore
+
+            results["daily_data"] = pd.DataFrame(data=daily_data)
+
+        return results
+
+    except Exception as e:
+        print(f"Error fetching weather data: {e}")
+        return results
 
 
 def create_weather_asset(

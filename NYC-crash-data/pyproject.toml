@@ -4,6 +4,7 @@ requires-python = ">=3.10,<3.15"
 version = "0.1.0"
 dependencies = [
     "dagster==1.13.0",
+    "dagster-duckdb>=0.29.0",
     "duckdb>=1.5.2",
     "openmeteo-requests>=1.7.5",
     "pandas>=2.3.3",
@@ -27,6 +28,7 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 force-include = { "pyproject.toml" = "pyproject.toml" }
+packages = ["src/NYC_crash_data"]
 
 [tool.dg]
 directory_type = "project"

@@ -513,6 +513,19 @@ wheels = [
 ]
 
 [[package]]
+name = "dagster-duckdb"
+version = "0.29.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "dagster" },
+    { name = "duckdb" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/99/4c/35e7ff8404e75513060c0082debf0f59854a79673546f1358dd7ca664c52/dagster_duckdb-0.29.0.tar.gz", hash = "sha256:eecf8ffcd0260e6c9ce7e433e7a605cdd9333b827d7ce172ee045dca60c80fcd", size = 10840, upload-time = "2026-04-09T18:17:40.16Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/33/e2/631cb97cfc7c07bb3446ace75c227bce36a84c09ef5a1704f07eca7076ff/dagster_duckdb-0.29.0-py3-none-any.whl", hash = "sha256:24f85c6b09b2ccc69fa82ccf87b03d8c3e3398c2617deb422bc122a6f00c2235", size = 10297, upload-time = "2026-04-09T18:17:39.246Z" },
+]
+
+[[package]]
 name = "dagster-graphql"
 version = "1.13.0"
 source = { registry = "https://pypi.org/simple" }
@@ -1514,6 +1527,7 @@ version = "0.1.0"
 source = { editable = "." }
 dependencies = [
     { name = "dagster" },
+    { name = "dagster-duckdb" },
     { name = "duckdb" },
     { name = "openmeteo-requests" },
     { name = "pandas", version = "2.3.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
@@ -1535,6 +1549,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "dagster", specifier = "==1.13.0" },
+    { name = "dagster-duckdb", specifier = ">=0.29.0" },
     { name = "duckdb", specifier = ">=1.5.2" },
     { name = "openmeteo-requests", specifier = ">=1.7.5" },
     { name = "pandas", specifier = ">=2.3.3" },
