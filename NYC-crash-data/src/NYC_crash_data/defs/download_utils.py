@@ -176,10 +176,16 @@ def download_weather_data(
     responses = openmeteo.weather_api(url, params=params)
 
     results = {}
+    hourly_dfs = []
+    daily_dfs = []
 
     try:
         # Process all locations listed in params
         for response in responses:
+            print(f"\nCoordinates: {response.Latitude()}°N {response.Longitude()}°E")
+            print(f"Elevation: {response.Elevation()} m asl")
+            print(f"Timezone difference to GMT+0: {response.UtcOffsetSeconds()}s")
+
             if "hourly" in params:
                 # Process hourly data. The order of variables needs to be the same as requested.
                 hourly = response.Hourly()
@@ -210,7 +216,7 @@ def download_weather_data(
                 hourly_data["snowfall"] = hourly_snowfall  # pyright: ignore
                 hourly_data["wind_speed_10m"] = hourly_wind_speed_10m  # pyright: ignore
 
-                results["hourly_data"] = pd.DataFrame(data=hourly_data)
+                hourly_dfs.append(pd.DataFrame(data=hourly_data))
 
             if "daily" in params:
                 # Process daily data. The order of variables needs to be the same as requested.
@@ -248,7 +254,14 @@ def download_weather_data(
                 daily_data["snowfall_sum"] = daily_snowfall_sum  # pyright: ignore
                 daily_data["precipitation_hours"] = daily_precipitation_hours  # pyright: ignore
 
-                results["daily_data"] = pd.DataFrame(data=daily_data)
+                daily_dfs.append(pd.DataFrame(data=daily_data))
+
+        if "hourly" in params:
+            df = pd.concat(hourly_dfs, ignore_index=True)
+            results["hourly_data"] = df
+        elif "daily" in params:
+            df = pd.concat(daily_dfs, ignore_index=True)
+            results["daily_data"] = df
 
         return results
 
