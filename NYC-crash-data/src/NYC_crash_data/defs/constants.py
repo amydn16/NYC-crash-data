@@ -1,5 +1,3 @@
-import os
-from dotenv import load_dotenv
 from pathlib import Path
 
 
@@ -7,6 +5,7 @@ from pathlib import Path
 CRASH_API_URL = "https://data.cityofnewyork.us/resource/h9gi-nx95.csv"
 VEHICLE_API_URL = "https://data.cityofnewyork.us/resource/bm4k-52h4.csv"
 PERSON_API_URL = "https://data.cityofnewyork.us/resource/f55k-p6yu.csv"
+
 
 # Where to save downloaded data to
 DATA_DIR = Path(__file__).parent.resolve() / "data"
@@ -16,32 +15,37 @@ PERSON_CSV_PATH = DATA_DIR / "person_data.csv"
 HOURLY_WEATHER_CSV_PATH = DATA_DIR / "hourly_weather_data.csv"
 DAILY_WEATHER_CSV_PATH = DATA_DIR / "daily_weather_data.csv"
 
+
 # Where to save DuckDB resources to
 DUCKDB_DATABASE_NAME = "NYC_crash_weather_analysis"
 DUCKDB_PATH = f"/tmp/{DUCKDB_DATABASE_NAME}.duckdb"
 
+
 # Obtained from and for use with Open-Meteo API (https://open-meteo.com/)
 BOROUGH_COORDINATES = {
-    "manhattan": (40.7834, -73.9663),
+    "bronx": (40.8499, -73.8664),
     "brooklyn": (40.6501, -73.9496),
+    "manhattan": (40.7834, -73.9663),
     "queens": (40.6815, -73.8365),
-    "the bronx": (40.8499, -73.8664),
     "staten island": (40.5623, -74.1399),
 }
 
-# Load weather variables for querying Open-Meteo API set in .env
-load_dotenv()
+TIMEZONE = "America/New_York"
+TEMPERATURE_UNIT = "fahrenheit"
+PRECIPITATION_UNIT = "inch"
 
-RAW_HOURLY_WEATHER_VARS = os.getenv("HOURLY_WEATHER_VARS")
-HOURLY_WEATHER_VARS = (
-    RAW_HOURLY_WEATHER_VARS.split(",") if RAW_HOURLY_WEATHER_VARS else []
-)
+# Always keep the order of weather variables in hourly or daily as below. Set a variable to an empty list to specify that no weather variables of a certain frequency are to be fetched.
+HOURLY_WEATHER_VARS = []
+DAILY_WEATHER_VARS = [
+    "sunrise",
+    "sunset",
+    "temperature_2m_max",
+    "temperature_2m_min",
+    "rain_sum",
+    "snowfall_sum",
+    "precipitation_hours",
+]
 
-RAW_DAILY_WEATHER_VARS = os.getenv("DAILY_WEATHER_VARS")
-DAILY_WEATHER_VARS = RAW_DAILY_WEATHER_VARS.split(",") if RAW_DAILY_WEATHER_VARS else []
-
-TIMEZONE = os.getenv("TIMEZONE")
-TEMPERATURE_UNIT = os.getenv("TEMPERATURE_UNIT")
-PRECIPITATION_UNIT = os.getenv("PRECIPITATION_UNIT")
-START_DATE = os.getenv("START_DATE")
-END_DATE = os.getenv("END_DATE")
+# Either specify start and end dates (formatted as "%Y-%m-%d") here, or set either to None to use the oldest or newest date in the crash dataset
+START_DATE = "2012-07-01"
+END_DATE = "2026-04-29"

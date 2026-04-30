@@ -72,8 +72,9 @@ def import_csv_to_duckdb(csv_path: str, duckdb: DuckDBResource, table_name: str)
             )
             """
         ).fetchone()
-        assert row_count is not None
-        row_count = row_count[0]
+        assert row_count is not None, (
+            f"Error importing csv at {csv_path} to table {table_name}"
+        )
 
 
 @dg.asset(kinds={"duckdb"}, deps=["crashes"], key=["target", "main", "raw_crashes"])
@@ -125,3 +126,8 @@ def raw_hourly_weather(duckdb: DuckDBResource) -> None:
             duckdb=duckdb,
             table_name=f"{DUCKDB_DATABASE_NAME}.main.raw_hourly_weather",
         )
+
+
+# ------------------------------------------
+# Functions for creating date, time, & borough dimension tables in DuckDB
+# ------------------------------------------

@@ -2,6 +2,9 @@
 __pycache__/
 *.py[codz]
 *$py.class
+*target/
+*dbt_packages/
+*logs/
 
 # C extensions
 *.so

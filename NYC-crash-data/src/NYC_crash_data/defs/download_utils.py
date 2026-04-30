@@ -15,7 +15,7 @@ from NYC_crash_data.defs.constants import (
 )
 
 # ------------------------------------------
-# Crash data fetching functions & helpers
+# Traffic data fetching functions & helpers
 # ------------------------------------------
 QUERY_LIMIT = 50000
 INITIAL_OFFSET = 0
@@ -45,6 +45,8 @@ def write_traffic_data_to_csv(dfs: list[pd.DataFrame], file_path: Path) -> bool:
     try:
         file_path.parent.mkdir(parents=True, exist_ok=True)
         df = pd.concat(dfs, ignore_index=True)
+        df.dropna(how="all", inplace=True)
+        df.drop_duplicates(inplace=True)
         df.to_csv(file_path, index=False)
         return True
     except Exception as e:
@@ -77,23 +79,11 @@ def get_min_max_dates_from_csv(
         max_date = max(crash_dates)
         return min_date, max_date
     except Exception as e:
-        print(f"Error reading crash dates from {str(file_path)}: {e}")
+        print(f"Error getting oldest and newest crash dates from {str(file_path)}: {e}")
         return
 
 
-def get_boroughs_from_csv(file_path: Path) -> list[str]:
-    try:
-        df = pd.read_csv(file_path, usecols=["borough"])
-        return sorted([str(item) for item in df["borough"].dropna().unique().tolist()])
-    except Exception as e:
-        print(f"Error reading boroughs from {str(file_path)}: {e}")
-        return []
-
-
-def get_params_for_fetching_weather_data(
-    file_path: Path,
-) -> dict[str, str | list[str | float]]:
-    params = {}
+def set_min_max_dates(file_path: Path) -> tuple[str, str]:
     min_date = ""
     max_date = ""
 
@@ -103,24 +93,49 @@ def get_params_for_fetching_weather_data(
             max_date = END_DATE
         else:
             min_max_dates = get_min_max_dates_from_csv(file_path)
-            if not min_max_dates:
-                return params
+            if min_max_dates:
+                if START_DATE and not END_DATE:
+                    min_date = START_DATE
+                    _, max_date_ts = min_max_dates
+                    max_date = max_date_ts.strftime("%Y-%m-%d")
+                elif END_DATE and not START_DATE:
+                    min_date_ts, _ = min_max_dates
+                    min_date = min_date_ts.strftime("%Y-%m-%d")
+                    max_date = END_DATE
+                else:
+                    min_date_ts, max_date_ts = min_max_dates
+                    min_date = min_date_ts.strftime("%Y-%m-%d")
+                    max_date = max_date_ts.strftime("%Y-%m-%d")
 
-            if min_max_dates and END_DATE and not START_DATE:
-                min_date_ts, _ = min_max_dates
-                min_date = min_date_ts.strftime("%Y-%m-%d")
-                max_date = END_DATE
-            elif min_max_dates and START_DATE and not END_DATE:
-                min_date = START_DATE
-                _, max_date_ts = min_max_dates
-                max_date = max_date_ts.strftime("%Y-%m-%d")
-            elif min_max_dates:
-                min_date_ts, max_date_ts = min_max_dates
-                min_date = min_date_ts.strftime("%Y-%m-%d")
-                max_date = max_date_ts.strftime("%Y-%m-%d")
+        return min_date, max_date
+    except Exception as e:
+        print(f"Error setting oldest and newest dates for analysis: {e}")
+        return "", ""
 
-        params["start_date"] = min_date
-        params["end_date"] = max_date
+
+def get_boroughs_from_csv(file_path: Path) -> list[str]:
+    try:
+        df = pd.read_csv(file_path, usecols=["borough"])
+        return sorted(
+            [str(item).lower() for item in df["borough"].dropna().unique().tolist()]
+        )
+    except Exception as e:
+        print(f"Error reading boroughs from {str(file_path)}: {e}")
+        return []
+
+
+def get_params_for_fetching_weather_data(
+    file_path: Path,
+) -> dict[str, str | list[str | float]]:
+    params = {}
+
+    try:
+        min_date, max_date = set_min_max_dates(file_path)
+        if min_date and max_date:
+            params["start_date"] = min_date
+            params["end_date"] = max_date
+        else:
+            return params
 
         boroughs = get_boroughs_from_csv(file_path)
 
@@ -197,32 +212,43 @@ def download_weather_data(
 
                 results["hourly_data"] = pd.DataFrame(data=hourly_data)
 
-            # Process daily data. The order of variables needs to be the same as requested.
-            daily = response.Daily()
-            daily_sunrise = daily.Variables(0).ValuesInt64AsNumpy()  # pyright: ignore
-            daily_sunset = daily.Variables(1).ValuesInt64AsNumpy()  # pyright: ignore
+            if "daily" in params:
+                # Process daily data. The order of variables needs to be the same as requested.
+                daily = response.Daily()
+                daily_sunrise = daily.Variables(0).ValuesInt64AsNumpy()  # pyright: ignore
+                daily_sunset = daily.Variables(1).ValuesInt64AsNumpy()  # pyright: ignore
+                daily_temperature_2m_max = daily.Variables(2).ValuesAsNumpy()  # pyright: ignore
+                daily_temperature_2m_min = daily.Variables(3).ValuesAsNumpy()  # pyright: ignore
+                daily_rain_sum = daily.Variables(4).ValuesAsNumpy()  # pyright: ignore
+                daily_snowfall_sum = daily.Variables(5).ValuesAsNumpy()  # pyright: ignore
+                daily_precipitation_hours = daily.Variables(6).ValuesAsNumpy()  # pyright: ignore
 
-            daily_data = {
-                "date": pd.date_range(
-                    start=pd.to_datetime(
-                        daily.Time() + response.UtcOffsetSeconds(),  # pyright: ignore
-                        unit="s",
-                        utc=True,
-                    ),
-                    end=pd.to_datetime(
-                        daily.TimeEnd() + response.UtcOffsetSeconds(),  # pyright: ignore
-                        unit="s",
-                        utc=True,
-                    ),
-                    freq=pd.Timedelta(seconds=daily.Interval()),  # pyright: ignore
-                    inclusive="left",
-                )
-            }
+                daily_data = {
+                    "date": pd.date_range(
+                        start=pd.to_datetime(
+                            daily.Time() + response.UtcOffsetSeconds(),  # pyright: ignore
+                            unit="s",
+                            utc=True,
+                        ),
+                        end=pd.to_datetime(
+                            daily.TimeEnd() + response.UtcOffsetSeconds(),  # pyright: ignore
+                            unit="s",
+                            utc=True,
+                        ),
+                        freq=pd.Timedelta(seconds=daily.Interval()),  # pyright: ignore
+                        inclusive="left",
+                    )
+                }
 
-            daily_data["sunrise"] = daily_sunrise  # pyright: ignore
-            daily_data["sunset"] = daily_sunset  # pyright: ignore
+                daily_data["sunrise"] = daily_sunrise  # pyright: ignore
+                daily_data["sunset"] = daily_sunset  # pyright: ignore
+                daily_data["temperature_2m_max"] = daily_temperature_2m_max  # pyright: ignore
+                daily_data["temperature_2m_min"] = daily_temperature_2m_min  # pyright: ignore
+                daily_data["rain_sum"] = daily_rain_sum  # pyright: ignore
+                daily_data["snowfall_sum"] = daily_snowfall_sum  # pyright: ignore
+                daily_data["precipitation_hours"] = daily_precipitation_hours  # pyright: ignore
 
-            results["daily_data"] = pd.DataFrame(data=daily_data)
+                results["daily_data"] = pd.DataFrame(data=daily_data)
 
         return results
 
