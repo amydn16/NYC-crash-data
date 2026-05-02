@@ -1,6 +1,6 @@
 version = 1
 revision = 2
-requires-python = ">=3.10, <3.15"
+requires-python = ">3.10, <3.15"
 resolution-markers = [
     "python_full_version >= '3.14' and sys_platform == 'win32'",
     "python_full_version >= '3.14' and sys_platform == 'emscripten'",
@@ -849,6 +849,19 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/cc/b1/1464f468d2e5813f5808de95df9d3113a645a5bfa2ffcaecbc542ddae272/duckdb-1.5.2-cp314-cp314-manylinux_2_26_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:be37680ddb380015cb37318e378c53511c45c4f0d8fac5599d22b7d092b9217a", size = 21434056, upload-time = "2026-04-13T11:30:01.238Z" },
     { url = "https://files.pythonhosted.org/packages/ce/32/6673607e024722473fa7aafdd29c0e3dd231dd528f6cd8b5797fbeeb229d/duckdb-1.5.2-cp314-cp314-win_amd64.whl", hash = "sha256:0b291786014df1133f8f18b9df4d004484613146e858d71a21791e0fcca16cf4", size = 13633667, upload-time = "2026-04-13T11:30:04.05Z" },
     { url = "https://files.pythonhosted.org/packages/7a/e3/9d34173ec068631faea3ea6e73050700729363e7e33306a9a3218e5cdc61/duckdb-1.5.2-cp314-cp314-win_arm64.whl", hash = "sha256:c9f3e0b71b8a50fccfb42794899285d9d318ce2503782b9dd54868e5ecd0ad31", size = 14402513, upload-time = "2026-04-13T11:30:06.609Z" },
+]
+
+[[package]]
+name = "duckdb-cli"
+version = "1.5.2"
+source = { registry = "https://pypi.org/simple" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/a8/02/aeb6057770f36a7ef404ebfb59712fd5e7a1e3d78e1177f73deb0fccf164/duckdb_cli-1.5.2-py3-none-macosx_12_0_arm64.whl", hash = "sha256:2d5ed9b019f31ca6898a02add6f3f80ae4a28837db49d521591745058b3e8da6", size = 16257503, upload-time = "2026-04-15T11:53:32.037Z" },
+    { url = "https://files.pythonhosted.org/packages/3a/1a/11facebc2bdb047171474ffd35301abc61416c98c52836c5357576e932bf/duckdb_cli-1.5.2-py3-none-macosx_12_0_x86_64.whl", hash = "sha256:5aa602ae1c476ae074d8bfaae4a3719393b563c49429617e2adbfd3aedc8ec33", size = 18474948, upload-time = "2026-04-15T11:53:35.596Z" },
+    { url = "https://files.pythonhosted.org/packages/43/77/f4cc3f183c5414c1bb8266a60123476fa30d94417a331b0b6bfb395718fe/duckdb_cli-1.5.2-py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:359776a08a44ecdd2389415b8029a88216a5fe05590750b4ceba4b1af9e687af", size = 19196257, upload-time = "2026-04-15T11:53:38.81Z" },
+    { url = "https://files.pythonhosted.org/packages/40/eb/d3bf1e1f469f2bb6d8225b0506cd250ab7f84f5c7cb7ca2300868659787b/duckdb_cli-1.5.2-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:879769ffc1831d3136a2fb3eeb3dba582e3f7670b25bd6c86adb9d5cddac4fa0", size = 21180683, upload-time = "2026-04-15T11:53:42.18Z" },
+    { url = "https://files.pythonhosted.org/packages/39/e2/da7ef11f14d961f3dfa5250d0a8ffda8dea40734ec24b46070c8e20b478f/duckdb_cli-1.5.2-py3-none-win_amd64.whl", hash = "sha256:2938b7d5981428afc0236e2d7cac9211f7b51c8e39fb5b965e454b8d187c85b2", size = 13087777, upload-time = "2026-04-15T11:53:45.442Z" },
+    { url = "https://files.pythonhosted.org/packages/bc/7a/fdc2c895d1c4feeb7e8edce115c5a6f83f1d0da22b43cef249f3c94f691c/duckdb_cli-1.5.2-py3-none-win_arm64.whl", hash = "sha256:c93680c0652596cff3d6eb91f311fe2d4c1698abb67fe5314224a22526ff7d23", size = 13772115, upload-time = "2026-04-15T11:53:48.653Z" },
 ]
 
 [[package]]
@@ -1935,6 +1948,7 @@ dependencies = [
 dev = [
     { name = "dagster-dg-cli" },
     { name = "dagster-webserver" },
+    { name = "duckdb-cli" },
     { name = "pyright" },
     { name = "ruff" },
 ]
@@ -1956,6 +1970,7 @@ requires-dist = [
 dev = [
     { name = "dagster-dg-cli" },
     { name = "dagster-webserver" },
+    { name = "duckdb-cli", specifier = ">=1.5.2" },
     { name = "pyright", specifier = ">=1.1.408" },
     { name = "ruff", specifier = ">=0.15.10" },
 ]

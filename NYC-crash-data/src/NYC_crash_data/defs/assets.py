@@ -68,7 +68,7 @@ def import_csv_to_duckdb(csv_path: str, duckdb: DuckDBResource, table_name: str)
         row_count = conn.execute(
             f"""
             create or replace table {table_name} as (
-                select * from read_csv('{csv_path}')
+                select distinct * from read_csv('{csv_path}', all_varchar = true, strict_mode = false)
             )
             """
         ).fetchone()

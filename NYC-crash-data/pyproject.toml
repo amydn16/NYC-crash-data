@@ -1,6 +1,6 @@
 [project]
 name = "NYC_crash_data"
-requires-python = ">=3.10,<3.15"
+requires-python = ">3.10,<3.15"
 version = "0.1.0"
 dependencies = [
     "dagster==1.13.0",
@@ -20,6 +20,7 @@ dev = [
     "dagster-dg-cli",
     "ruff>=0.15.10",
     "pyright>=1.1.408",
+    "duckdb-cli>=1.5.2",
 ]
 
 [build-system]
